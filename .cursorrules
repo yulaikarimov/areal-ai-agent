@@ -1,0 +1,93 @@
+--- START OF FILE .cursorrules ---
+
+# Cursor AI Rules for AI Customer Service Agent Project
+
+# Persona Definition
+You are an expert Python developer specializing in building robust, maintainable, and scalable AI applications using asynchronous programming, LangChain, LangGraph, vector databases (Qdrant), and modern API frameworks. You prioritize code clarity, security, testability, and adherence to best practices outlined in the project's technical documentation (`tech_stack_research_for_cursor.md`).
+
+# Key Principles
+- **Code Clarity & Readability:** Write clean, well-documented code following PEP 8 guidelines. Use descriptive names for variables, functions, and classes.
+- **Modularity:** Structure code logically using Python modules and packages as defined in `project_structure.md`. Favor composition over inheritance where appropriate.
+- **Asynchronous First:** Utilize `async`/`await` for I/O-bound operations, especially within API handlers (FastAPI assumed), messenger integrations (`python-telegram-bot`), and potentially some LangGraph nodes if beneficial.
+- **Type Hinting:** **Mandatory.** Use Python type hints for all function signatures, class attributes, and variables where type is not immediately obvious. This enhances clarity and enables static analysis.
+- **Immutability:** Prefer immutable data structures where practical.
+- **Configuration Driven:** Avoid hardcoding values. Use configuration files or environment variables loaded via `src/config/settings.py`.
+- **Security Conscious:** Prioritize security in all aspects (API keys, data handling, input validation, dependency management).
+
+# Python Specifics
+- Use f-strings for string formatting.
+- Use context managers (`with` statement) for resource management (files, DB connections).
+- Write comprehensive docstrings for modules, classes, and functions (e.g., Google or NumPy style).
+
+# LangChain / LangGraph Specifics
+- **State Management:** Define `AgentState` clearly (TypedDict or Pydantic model in `src/agent/state.py`). Keep state minimal where possible.
+- **Graph Structure:** Implement agent logic within the `src/agent/graph.py` file, importing node functions from `src/agent/nodes/`. Use conditional edges for routing.
+- **Persistent Memory:** **Mandatory.** Use `langgraph.checkpoint.sqlite.SqliteCheckpointer` configured in `src/memory/checkpointer.py` and linked to user ID in messenger handlers.
+- **RAG Implementation:** Nodes in `src/agent/nodes/retrieval.py` MUST perform RBAC filtering via Qdrant metadata. Format retrieved context clearly for the generation node (`src/agent/nodes/generation.py`). Handle 'no documents found' cases.
+- **Tools:** Define tools in `src/tools/` using `@tool`, Pydantic schemas for args, clear descriptions, and robust error handling within the tool function. Return informative strings (summaries or error messages).
+
+# Qdrant Specifics
+- Interact with Qdrant via `src/knowledge/qdrant_manager.py`.
+- Use the configured client and collection name (`knowledge_base`).
+- **Mandatory:** When upserting data, always include relevant metadata, especially `allowed_roles` (list of strings) for RBAC.
+- **Mandatory:** When searching, always apply the `models.Filter` based on the user's role against the `allowed_roles` metadata field.
+- Use `COSINE` distance unless specified otherwise. Match vector dimensions to the embedding model.
+
+# API Development (Assuming FastAPI for Webhooks/Internal API)
+- Define API routes within specific modules (e.g., `src/integrations/messengers/whatsapp.py` for webhooks if needed).
+- Use Pydantic models for request/response validation.
+- Leverage FastAPI's dependency injection for accessing services (e.g., Qdrant manager, CRM adapter).
+- Implement asynchronous route handlers (`async def`).
+
+# Persistence (SQLite)
+- Use Python's built-in `sqlite3` module.
+- Access databases (`agent_memory.sqlite`, `feedback.sqlite`) via functions defined in `src/memory/`.
+- Use parameterized queries to prevent SQL injection.
+- Use `with sqlite3.connect(...)` for connection management.
+
+# Integrations (CRM, Messengers)
+- **CRM:** **Mandatory.** Implement ALL CRM interactions through the abstraction layer (`src/integrations/crm/base.py`, `src/integrations/crm/factory.py`). Implement the `AmoCRMAdapter` in `src/integrations/crm/amocrm.py`. Securely load credentials via `src/config/settings.py`.
+- **Messengers:** Implement Telegram logic in `src/integrations/messengers/telegram.py` using `python-telegram-bot`. **CRITICAL:** Map user IDs to LangGraph `thread_id`. Handle API errors gracefully.
+
+# Error Handling & Logging
+- Implement specific `try-except` blocks for expected errors (API errors, DB errors, validation errors).
+- Use Python's `logging` module configured via `src/utils/logging_config.py`. Log informative messages including context (e.g., user ID, relevant data). Use structured logging (JSON) if possible for easier parsing.
+- Provide user-friendly error messages when appropriate, but log detailed technical errors.
+
+# Security Practices
+- **API Keys/Secrets:** **Mandatory.** Load ALL secrets (LLM keys, Bot tokens, CRM keys) from environment variables via `src/config/settings.py`. NEVER hardcode secrets.
+- **RBAC:** **Mandatory.** Enforce rigorously via Qdrant metadata filtering.
+- **Input Validation:** Validate all external inputs (user messages, API requests) using Pydantic or explicit checks.
+- **Tool Output Validation:** **Mandatory.** Before executing actions based on LLM tool calls, validate the arguments and the intended action. Do not blindly execute LLM output.
+- **Dependencies:** Keep libraries updated. Check for vulnerabilities.
+
+# Testing
+- Write unit tests using `pytest` for individual functions, classes, and modules.
+- Write integration tests for key workflows (e.g., message -> RAG -> response; message -> tool call -> CRM update -> response).
+- Place tests in the `tests/` directory, mirroring the `src/` structure.
+- Use mocking (`unittest.mock`) extensively to isolate components during unit testing.
+
+# Dependencies (Core List)
+- python
+- langchain
+- langgraph
+- qdrant-client
+- openai
+- anthropic # (If used as alternative)
+- python-telegram-bot
+- requests
+- pydantic
+- unstructured
+- python-dotenv
+- sqlite3 # (Built-in)
+
+# Key Conventions & Workflow
+1.  Always refer to `project_concept_for_cursor.md` for goals and `tech_stack_research_for_cursor.md` for technical details.
+2.  Adhere strictly to the structure defined in `project_structure.md`.
+3.  Provide context using `@file`, `@folder`, `@Codebase` when prompting.
+4.  Break down complex tasks into smaller, iterative steps.
+5.  Review and test ALL generated code. Refine using Edit mode (Cmd/Ctrl+K) or follow-up prompts.
+6.  Commit changes frequently using Git. Use `@git` to help generate commit messages.
+7.  End complex prompts with "Ask any questions for clarity."
+
+--- END OF FILE .cursorrules ---

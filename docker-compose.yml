@@ -1,0 +1,33 @@
+version: '3.8' # Specify compose file version
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest # Use the latest Qdrant image, or specify a version like v1.9.1
+    container_name: qdrant_service # Optional: Give the container a specific name
+    ports:
+      - "6335:6333" # Map host port 6335 to container port 6333
+      - "6336:6334" # Map host port 6336 to container port 6334 (gRPC)
+    volumes:
+      # Mount a local directory to persist Qdrant data
+      # This ensures your collections survive container restarts
+      - ./data/persistent/qdrant_storage:/qdrant/storage 
+    # Optional: Add environment variables if needed for Qdrant configuration
+    # environment:
+    #   QDRANT__SERVICE__API_KEY: your_secret_api_key # Example: Set an API key
+
+  # You could add other services here later (e.g., your Python app)
+  # app:
+  #   build: . # Build from Dockerfile in the current directory
+  #   container_name: ai_agent_app
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - qdrant # Ensure Qdrant starts before the app
+  #   ports:
+  #     - "8000:8000" # If your app runs a web server
+  #   volumes:
+  #     - ./src:/app/src # Mount source code for development
+
+# Optional: Define named volumes if preferred over host mounts
+# volumes:
+#   qdrant_data:

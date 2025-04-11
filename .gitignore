@@ -1,0 +1,36 @@
+# Environment variables
+.env
+
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Persistent Data (Databases, potentially large/sensitive ingested docs)
+data/persistent/
+# data/docs_to_ingest/ # Uncomment if source docs should not be committed
+
+# IDE / Editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# LangSmith Cache (if applicable locally)
+.langchain/
+
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
